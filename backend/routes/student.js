@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const User = require('../models/User');
 const TimeSlot = require('../models/TimeSlot');
 const Appointment = require('../models/Appointment');
 
@@ -17,6 +18,11 @@ router.get('/timeslots/:professorId', async (req, res) => {
 router.post('/appointments', async (req, res) => {
   if (req.user.role !== 'student') return res.status(403).json({ message: 'Forbidden' });
   const { professorId, timeSlotId } = req.body;
+   const professor = await User.findById(professorId);
+  if (!professor || professor.role !== 'professor') {
+  return res.status(404).json({ message: 'Professor not found' });
+  }
+  
   if (!professorId || !timeSlotId) return res.status(400).json({ message: 'Missing professorId or timeSlotId' });
 
   const slot = await TimeSlot.findById(timeSlotId);
